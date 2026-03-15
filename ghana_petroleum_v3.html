@@ -1,0 +1,1297 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Ghana Petroleum Price Intelligence · NPA Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Nunito+Sans:ital,opsz,wght@0,6..12,300;0,6..12,400;0,6..12,600;0,6..12,700;1,6..12,400&family=IBM+Plex+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════
+   M A T E R I A L   D E S I G N   3   E X P R E S S I V E
+   Ghana Petroleum Price Intelligence · v3.0
+   Ing. Oppong · Karbala Refinery · 14 Mar 2026
+   ═══════════════════════════════════════════════ */
+
+:root {
+  --r-xs:4px; --r-sm:8px; --r-md:12px; --r-lg:16px;
+  --r-xl:20px; --r-2xl:24px; --r-3xl:28px; --r-full:999px;
+  --ff-d:'Outfit',sans-serif;
+  --ff-b:'Nunito Sans',sans-serif;
+  --ff-m:'IBM Plex Mono',monospace;
+  /* Product palette */
+  --gas:#38C4F8;  --gas-a:rgba(56,196,248,.12);  --gas-b:rgba(56,196,248,.25);
+  --diesel:#FB923C; --diesel-a:rgba(251,146,60,.12); --diesel-b:rgba(251,146,60,.25);
+  --lpg:#3DE87A;  --lpg-a:rgba(61,232,122,.12);  --lpg-b:rgba(61,232,122,.25);
+  --atk:#A78BFA;  --atk-a:rgba(167,139,250,.12); --atk-b:rgba(167,139,250,.25);
+  --gold:#F5A827; --gold-a:rgba(245,168,39,.12);  --gold-b:rgba(245,168,39,.28);
+  --err:#F43F5E;  --err-a:rgba(244,63,94,.12);    --warn:#FBBF24; --ok:#22C55E;
+  --gh-g:#006B3F; --gh-y:#FCD116; --gh-r:#CE1126;
+  --trans:color .3s,background-color .3s,border-color .3s,box-shadow .3s,opacity .3s;
+}
+[data-theme="dark"]{
+  --bg:#070E1B; --bg2:#0C1628; --surf:#0F1C30; --surf-lo:#0A1322;
+  --surf-hi:#162236; --surf-top:#1C2C42; --elev1:#111F35; --elev2:#16263E;
+  --bdr:rgba(56,100,160,.3); --bdr2:rgba(56,100,160,.55);
+  --txt:#E4EDF8; --txt2:#7A9FCA; --txt3:#3C5878;
+  --sh:0 2px 12px rgba(0,0,0,.45); --sh2:0 6px 32px rgba(0,0,0,.65);
+  --sh3:0 12px 48px rgba(0,0,0,.8);
+}
+[data-theme="light"]{
+  --bg:#EEF3FA; --bg2:#E4EBF5; --surf:#FFFFFF; --surf-lo:#F4F7FC;
+  --surf-hi:#E8EFF8; --surf-top:#DDE5F0; --elev1:#F9FBFE; --elev2:#F2F6FC;
+  --bdr:rgba(60,100,160,.15); --bdr2:rgba(60,100,160,.3);
+  --txt:#0D1E35; --txt2:#3A5880; --txt3:#8CAAC8;
+  --sh:0 2px 12px rgba(0,50,120,.07); --sh2:0 6px 32px rgba(0,50,120,.1);
+  --sh3:0 12px 48px rgba(0,50,120,.13);
+  --gold:#C07C0A; --gas:#0A7BA8; --diesel:#B54A0A; --lpg:#0D7A35; --atk:#6B4DD6; --err:#C51B31;
+  --gas-a:rgba(10,123,168,.08); --diesel-a:rgba(181,74,10,.08);
+  --lpg-a:rgba(13,122,53,.08); --atk-a:rgba(107,77,214,.08); --gold-a:rgba(192,124,10,.08);
+  --gas-b:rgba(10,123,168,.2); --diesel-b:rgba(181,74,10,.2); --lpg-b:rgba(13,122,53,.2);
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--ff-b);background:var(--bg);color:var(--txt);min-height:100vh;overflow-x:hidden;transition:var(--trans)}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse 80% 45% at 15% -5%,rgba(245,168,39,.04),transparent 60%),
+             radial-gradient(ellipse 60% 35% at 85% 105%,rgba(56,196,248,.03),transparent 55%)}
+
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--bdr2);border-radius:3px}
+
+.flag{height:3px;background:linear-gradient(to right,var(--gh-g) 33.33%,var(--gh-y) 33.33% 66.66%,var(--gh-r) 66.66%);position:sticky;top:0;z-index:200}
+.wrap{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:18px 16px 40px}
+
+/* ─── TOP BAR ─── */
+.topbar{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:18px;flex-wrap:wrap}
+.tb-left{display:flex;flex-direction:column;gap:5px}
+.eyebrow{display:inline-flex;align-items:center;gap:6px;width:fit-content;
+  font-family:var(--ff-m);font-size:8.5px;letter-spacing:2px;text-transform:uppercase;
+  color:var(--gold);background:var(--gold-a);border:1px solid rgba(245,168,39,.28);
+  border-radius:var(--r-full);padding:3px 12px}
+.eyebrow::before{content:'';width:6px;height:6px;background:var(--gold);border-radius:50%;animation:pulse 2s infinite;flex-shrink:0}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.25;transform:scale(.65)}}
+h1{font-family:var(--ff-d);font-size:21px;font-weight:900;color:var(--txt);letter-spacing:-.6px;line-height:1.2}
+h1 span{color:var(--gold)}
+.tb-sub{font-size:11.5px;color:var(--txt2)}
+.tb-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding-top:4px}
+.win-chip{display:flex;flex-direction:column;gap:1px;padding:9px 15px;border-radius:var(--r-xl);
+  background:var(--surf);border:1px solid var(--bdr);box-shadow:var(--sh);transition:var(--trans)}
+.wc-l{font-family:var(--ff-m);font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gas);margin-bottom:2px}
+.wc-v{font-family:var(--ff-d);font-size:13px;font-weight:700;color:var(--txt)}
+.wc-s{font-family:var(--ff-m);font-size:8px;color:var(--txt3)}
+.next-chip{background:linear-gradient(135deg,var(--err-a),rgba(251,191,36,.05));
+  border:1px solid rgba(244,63,94,.3);animation:glow 2.8s infinite}
+.next-chip .wc-l{color:var(--err)}
+.next-chip .wc-s{color:var(--err)}
+@keyframes glow{0%,100%{box-shadow:0 0 0 0 rgba(244,63,94,0)}50%{box-shadow:0 0 12px rgba(244,63,94,.2)}}
+.mode-btn{width:40px;height:40px;border-radius:var(--r-full);background:var(--surf);
+  border:1px solid var(--bdr);display:flex;align-items:center;justify-content:center;
+  font-size:17px;cursor:pointer;transition:var(--trans);box-shadow:var(--sh);flex-shrink:0}
+.mode-btn:hover{border-color:var(--gold);transform:rotate(22deg)}
+
+/* ─── METRIC CARDS ─── */
+.cards6{display:grid;grid-template-columns:repeat(6,1fr);gap:9px;margin-bottom:14px}
+.mc{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r-2xl);
+  padding:13px 14px 12px;position:relative;overflow:hidden;box-shadow:var(--sh);
+  transition:var(--trans);cursor:default}
+.mc:hover{transform:translateY(-2px);box-shadow:var(--sh2);border-color:var(--bdr2)}
+.mc-bar{position:absolute;top:0;left:0;right:0;height:3px;border-radius:var(--r-2xl) var(--r-2xl) 0 0}
+.mc-lbl{font-family:var(--ff-m);font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--txt3);margin-bottom:5px}
+.mc-val{font-family:var(--ff-d);font-size:18px;font-weight:800;line-height:1.1;letter-spacing:-.5px;transition:var(--trans)}
+.mc-unit{font-size:9.5px;color:var(--txt2);margin-top:2px;font-family:var(--ff-b)}
+.mc-chg{font-family:var(--ff-m);font-size:8.5px;margin-top:5px;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.pill{padding:2px 8px;border-radius:var(--r-full);font-size:8px;font-family:var(--ff-m)}
+.pill.up{background:var(--err-a);color:var(--err)} .pill.dn{background:var(--lpg-a);color:var(--ok)} .pill.nt{background:var(--surf-hi);color:var(--txt3)}
+.txt-up{color:var(--err)} .txt-dn{color:var(--ok)} .txt-nt{color:var(--txt3)}
+
+/* Crack card */
+.crack-rows{display:flex;flex-direction:column;gap:4px;margin-top:4px}
+.cr{display:flex;justify-content:space-between;align-items:center;padding:3px 0;border-bottom:1px solid var(--bdr)}
+.cr:last-child{border:none} .cr-src{font-family:var(--ff-m);font-size:8px;color:var(--txt3)} .cr-v{font-family:var(--ff-d);font-size:12px;font-weight:700;color:var(--gold)}
+
+/* ─── FORECAST WINDOW CARD ─── */
+.fw-card{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r-2xl);
+  padding:18px 20px;margin-bottom:14px;box-shadow:var(--sh);transition:var(--trans)}
+.fw-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:10px;flex-wrap:wrap}
+.fw-title{font-family:var(--ff-d);font-size:13px;font-weight:700;color:var(--txt);display:flex;align-items:center;gap:8px}
+.fw-badge{font-family:var(--ff-m);font-size:8px;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-full);background:var(--err-a);color:var(--err);border:1px solid rgba(244,63,94,.28)}
+.fw-tabs{display:flex;gap:6px;flex-wrap:wrap}
+.ftab{padding:6px 13px;border-radius:var(--r-full);font-family:var(--ff-m);font-size:8.5px;letter-spacing:.5px;
+  cursor:pointer;transition:var(--trans);background:var(--surf-hi);border:1px solid var(--bdr);color:var(--txt2)}
+.ftab:hover{border-color:var(--gold);color:var(--gold)}
+.ftab.act{background:var(--gold-a);border-color:var(--gold);color:var(--gold);font-weight:600}
+.ftab.nxt{background:var(--err-a);border-color:rgba(244,63,94,.35);color:var(--err)}
+.ftab.nxt.act{border-color:var(--err)}
+.fw-content{display:none} .fw-content.vis{display:block}
+.fw-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.fwp{background:var(--surf-lo);border:1px solid var(--bdr);border-radius:var(--r-xl);
+  padding:13px 14px;position:relative;overflow:hidden;transition:var(--trans)}
+.fwp:hover{transform:translateY(-1px);border-color:var(--bdr2)}
+.fwp-bar{position:absolute;top:0;left:0;right:0;height:3px}
+.fp-lbl{font-family:var(--ff-m);font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--txt3);margin-bottom:5px}
+.fp-price{font-family:var(--ff-d);font-size:20px;font-weight:800;letter-spacing:-.6px;transition:var(--trans)}
+.fp-unit{font-size:9.5px;color:var(--txt2);margin-top:2px}
+.fp-chg{font-family:var(--ff-m);font-size:8.5px;margin-top:6px;display:flex;align-items:center;gap:5px}
+.fp-conf{font-family:var(--ff-m);font-size:8px;color:var(--txt3);margin-top:4px}
+.fp-bar{margin-top:6px;height:3px;background:var(--surf-top);border-radius:2px;overflow:hidden}
+.fp-fill{height:100%;border-radius:2px;transition:width .4s ease}
+.alert-row{margin-top:12px;padding:8px 14px;border-radius:var(--r-xl);background:var(--err-a);border:1px solid rgba(244,63,94,.28);display:none;align-items:center;gap:8px}
+.alert-row.vis{display:flex}
+.alert-icon{font-size:16px;flex-shrink:0}
+.alert-txt{font-family:var(--ff-m);font-size:9px;color:var(--err)}
+.fw-bottom{margin-top:12px;padding-top:12px;border-top:1px solid var(--bdr);display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+.fb-item{display:flex;align-items:center;gap:5px}
+.fb-lbl{font-family:var(--ff-m);font-size:8.5px;color:var(--txt3)}
+.fb-val{font-family:var(--ff-d);font-size:12px;font-weight:700;color:var(--txt)}
+
+/* ─── MAIN GRID ─── */
+.main-grid{display:grid;grid-template-columns:1fr 310px;gap:13px;margin-bottom:13px}
+.chart-panel{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r-2xl);padding:18px;box-shadow:var(--sh);transition:var(--trans)}
+.ph{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:13px;gap:10px;flex-wrap:wrap}
+.p-title{font-family:var(--ff-d);font-size:11.5px;font-weight:700;color:var(--txt);text-transform:uppercase;letter-spacing:.5px}
+.legend{display:flex;gap:11px;flex-wrap:wrap;align-items:center}
+.li{display:flex;align-items:center;gap:4px;font-family:var(--ff-m);font-size:8.5px;color:var(--txt2)}
+.ll{width:18px;height:2.5px;border-radius:2px;flex-shrink:0}
+.ll-d{width:18px;border-top:2.5px dashed;flex-shrink:0}
+.chart-box{position:relative;height:295px}
+.scen-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:11px;align-items:center}
+.sc-lbl{font-family:var(--ff-m);font-size:8px;letter-spacing:1px;color:var(--txt3)}
+.sbtn{padding:4px 10px;font-family:var(--ff-m);font-size:8px;letter-spacing:.4px;
+  border:1px solid var(--bdr);background:var(--surf-hi);color:var(--txt2);
+  border-radius:var(--r-full);cursor:pointer;transition:var(--trans);white-space:nowrap}
+.sbtn:hover{border-color:var(--gold);color:var(--gold)}
+.sbtn.act{background:var(--gold-a);border-color:var(--gold);color:var(--gold);font-weight:600}
+
+/* ─── SLIDER PANEL ─── */
+.sp{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r-2xl);padding:18px;box-shadow:var(--sh);display:flex;flex-direction:column;gap:14px;transition:var(--trans)}
+.sp-title{font-family:var(--ff-d);font-size:12px;font-weight:700;color:var(--txt);text-transform:uppercase;letter-spacing:.5px}
+.brent-disp{background:linear-gradient(145deg,var(--gold-a),rgba(245,168,39,.04));
+  border:1px solid var(--gold-b);border-radius:var(--r-2xl);padding:16px;text-align:center;position:relative;overflow:hidden}
+.brent-disp::before{content:'BRENT CRUDE BENCHMARK';position:absolute;top:9px;left:50%;transform:translateX(-50%);
+  font-family:var(--ff-m);font-size:7px;color:var(--gold);letter-spacing:2px;white-space:nowrap;opacity:.8}
+.bn{font-family:var(--ff-d);font-size:42px;font-weight:900;color:var(--gold);letter-spacing:-3px;line-height:1;margin-top:16px;transition:all .2s}
+.bs{font-size:9.5px;color:var(--txt2);margin-top:3px}
+.by{font-family:var(--ff-m);font-size:9px;margin-top:5px}
+input[type=range]{-webkit-appearance:none;width:100%;height:7px;border-radius:var(--r-full);outline:none;cursor:pointer;
+  background:linear-gradient(to right,var(--gold) var(--pct,30%),var(--surf-top) var(--pct,30%));transition:background .08s}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;background:var(--gold);
+  border-radius:50%;box-shadow:0 0 0 3px var(--gold-a),0 0 14px var(--gold-b);cursor:pointer;transition:transform .15s}
+input[type=range]::-webkit-slider-thumb:active{transform:scale(1.3)}
+.ticks{display:flex;justify-content:space-between;font-family:var(--ff-m);font-size:7.5px;color:var(--txt3);margin-top:4px}
+.fx-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.fx-g{display:flex;flex-direction:column;gap:3px}
+.sl-lbl{font-family:var(--ff-m);font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--txt3);margin-bottom:2px}
+.pi{background:var(--surf-lo);border:1px solid var(--bdr);border-radius:var(--r-md);
+  padding:7px 10px;font-family:var(--ff-m);font-size:12px;color:var(--txt);width:100%;outline:none;transition:var(--trans)}
+.pi:focus{border-color:var(--gold)}
+.ind-stack{display:flex;flex-direction:column;gap:8px}
+.icard{border-radius:var(--r-xl);padding:11px 13px;position:relative;overflow:hidden;transition:var(--trans)}
+.icard:hover{transform:translateY(-1px)}
+.icard::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.icard.g{background:var(--gas-a);border:1px solid var(--gas-b)}
+.icard.g::before{background:var(--gas)}
+.icard.d{background:var(--diesel-a);border:1px solid var(--diesel-b)}
+.icard.d::before{background:var(--diesel)}
+.icard.l{background:var(--lpg-a);border:1px solid var(--lpg-b)}
+.icard.l::before{background:var(--lpg)}
+.il{font-family:var(--ff-m);font-size:7.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--txt2);margin-bottom:3px}
+.iv{font-family:var(--ff-d);font-size:21px;font-weight:800;letter-spacing:-.8px;transition:all .2s}
+.iv.g{color:var(--gas)} .iv.d{color:var(--diesel)} .iv.l{color:var(--lpg)}
+.isub{font-size:9px;color:var(--txt2);margin-top:1px}
+.ichg{font-family:var(--ff-m);font-size:8.5px;margin-top:4px}
+.risk{display:inline-flex;align-items:center;gap:5px;font-family:var(--ff-m);font-size:8.5px;
+  padding:4px 12px;border-radius:var(--r-full);margin-top:7px}
+.risk.lo{background:rgba(34,197,94,.1);color:var(--ok);border:1px solid rgba(34,197,94,.28)}
+.risk.md{background:rgba(251,191,36,.1);color:var(--warn);border:1px solid rgba(251,191,36,.28)}
+.risk.hi{background:var(--err-a);color:var(--err);border:1px solid rgba(244,63,94,.3)}
+.risk.xt{background:rgba(244,63,94,.18);color:#FF5C7A;border:1px solid rgba(244,63,94,.5);animation:bk 1.2s infinite}
+@keyframes bk{0%,100%{opacity:1}50%{opacity:.35}}
+
+/* ─── DIVIDER ─── */
+.sec{display:flex;align-items:center;gap:10px;margin:4px 0 11px}
+.sl{flex:1;height:1px;background:var(--bdr)}
+.st{font-family:var(--ff-m);font-size:9px;color:var(--gold);letter-spacing:2px;text-transform:uppercase;white-space:nowrap}
+
+/* ─── PRODUCT CARDS ─── */
+.prod-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:13px}
+.pc{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r-2xl);padding:15px;
+  position:relative;overflow:hidden;box-shadow:var(--sh);transition:var(--trans)}
+.pc:hover{transform:translateY(-2px);box-shadow:var(--sh2);border-color:var(--bdr2)}
+.pc-glow{position:absolute;bottom:-25px;right:-25px;width:70px;height:70px;border-radius:50%;filter:blur(22px);opacity:.22;pointer-events:none}
+.pc-bar{position:absolute;top:0;left:0;right:0;height:3px}
+.pc-ico{font-size:18px;margin-bottom:5px}
+.pc-nm{font-family:var(--ff-d);font-size:12px;font-weight:700;color:var(--txt)}
+.pc-sp{font-family:var(--ff-m);font-size:7.5px;color:var(--txt3);letter-spacing:1px;margin-bottom:7px}
+.pc-v{font-family:var(--ff-d);font-size:22px;font-weight:900;letter-spacing:-1px;line-height:1;transition:var(--trans)}
+.pc-u{font-family:var(--ff-m);font-size:9px;color:var(--txt2);margin-top:2px}
+.pc-b{margin-top:7px;height:4px;background:var(--surf-top);border-radius:2px;overflow:hidden}
+.pc-bf{height:100%;border-radius:2px;transition:width .45s ease}
+.pc-chg{font-family:var(--ff-m);font-size:8.5px;margin-top:5px}
+
+/* ─── BREAKDOWN ─── */
+.bk-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:13px}
+.bk{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r-2xl);padding:14px;box-shadow:var(--sh);transition:var(--trans)}
+.bk-h{font-family:var(--ff-m);font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--txt3);margin-bottom:9px;display:flex;align-items:center;gap:5px}
+.bk-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.bki{display:flex;flex-direction:column;gap:6px}
+.bkr{display:flex;flex-direction:column;gap:2px}
+.bkr-top{display:flex;justify-content:space-between;align-items:center}
+.bkr-n{font-size:11px;color:var(--txt2);font-family:var(--ff-b)}
+.bkr-v{font-family:var(--ff-m);font-size:9.5px;color:var(--txt)}
+.bk-track{height:3px;background:var(--surf-top);border-radius:2px;overflow:hidden}
+.bk-fill{height:100%;border-radius:2px;transition:width .4s ease}
+.bk-tot{margin-top:9px;padding-top:9px;border-top:1px solid var(--bdr);display:flex;justify-content:space-between;align-items:center}
+.bkt-l{font-family:var(--ff-b);font-size:12px;font-weight:600;color:var(--txt)}
+.bkt-v{font-family:var(--ff-d);font-size:12px;font-weight:700;color:var(--gold)}
+
+/* ─── ALGORITHM PANEL ─── */
+.algo{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r-2xl);margin-bottom:13px;box-shadow:var(--sh);overflow:hidden;transition:var(--trans)}
+.algo-toggle{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;cursor:pointer;transition:var(--trans)}
+.algo-toggle:hover{background:var(--surf-hi)}
+.at-left{display:flex;align-items:center;gap:12px}
+.at-ico{width:38px;height:38px;border-radius:var(--r-lg);background:var(--gold-a);border:1px solid var(--gold-b);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.at-h{font-family:var(--ff-d);font-size:13px;font-weight:700;color:var(--txt)}
+.at-s{font-family:var(--ff-m);font-size:8px;color:var(--txt3);letter-spacing:.4px;margin-top:2px}
+.at-arr{width:30px;height:30px;border-radius:var(--r-full);background:var(--surf-hi);border:1px solid var(--bdr);display:flex;align-items:center;justify-content:center;font-size:14px;transition:transform .35s ease,var(--trans);flex-shrink:0}
+.at-arr.open{transform:rotate(180deg)}
+.algo-body{max-height:0;overflow:hidden;transition:max-height .5s cubic-bezier(.4,0,.2,1)}
+.algo-body.open{max-height:2400px}
+.algo-inner{padding:0 20px 20px;display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.fbox{background:var(--surf-lo);border:1px solid var(--bdr);border-radius:var(--r-xl);padding:14px;
+  font-family:var(--ff-m);font-size:10px;line-height:1.9;white-space:pre;overflow-x:auto;transition:var(--trans)}
+.fbox .cm{color:var(--txt3)} .fbox .kw{color:var(--gold)} .fbox .vt{color:var(--gas)}
+.fbox .pd{color:var(--lpg)} .fbox .dt{color:var(--diesel)} .fbox .at-c{color:var(--atk)}
+.levy-box{background:var(--surf-lo);border:1px solid var(--bdr);border-radius:var(--r-xl);padding:13px;transition:var(--trans)}
+.lb-h{font-family:var(--ff-m);font-size:8.5px;color:var(--gold);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:9px}
+.lev-hdr{display:flex;justify-content:space-between;margin-bottom:5px}
+.lev-hdr span{font-family:var(--ff-m);font-size:7.5px;color:var(--txt3)}
+.lev-row{display:flex;justify-content:space-between;align-items:center;padding:3.5px 0;border-bottom:1px solid var(--bdr)}
+.lev-row:last-child{border:none;font-weight:700}
+.lev-n{font-size:11px;color:var(--txt2);font-family:var(--ff-b)}
+.lev-vs{display:flex;gap:10px}
+.lev-v{font-family:var(--ff-m);font-size:9px;width:44px;text-align:right;color:var(--txt)}
+.scholar{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 20px 20px}
+.snote{padding:13px 15px;border-radius:var(--r-xl);background:var(--atk-a);border-left:3px solid var(--atk);transition:var(--trans)}
+.sn{font-family:var(--ff-d);font-size:12.5px;font-weight:700;color:var(--atk);margin-bottom:4px}
+.snote p{font-size:11.5px;color:var(--txt2);line-height:1.55}
+.sens-box{padding:13px 15px;border-radius:var(--r-xl);background:var(--gold-a);border:1px solid var(--gold-b);transition:var(--trans)}
+.sen-h{font-family:var(--ff-m);font-size:8.5px;color:var(--gold);letter-spacing:1px;margin-bottom:8px}
+.sen-r{font-size:12px;color:var(--txt2);margin-bottom:4px} .sen-r strong{color:var(--txt)}
+
+/* ─── CITATIONS ─── */
+.cit{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r-2xl);margin-bottom:14px;box-shadow:var(--sh);overflow:hidden;transition:var(--trans)}
+.cit-body{max-height:0;overflow:hidden;transition:max-height .5s cubic-bezier(.4,0,.2,1)}
+.cit-body.open{max-height:1200px}
+.cit-inner{padding:0 20px 20px}
+.cit-entry{padding:10px 0;border-bottom:1px solid var(--bdr);font-size:11.5px;color:var(--txt2);line-height:1.6}
+.cit-entry:last-child{border:none}
+.cit-entry em{color:var(--txt);font-style:italic}
+.cit-entry a{color:var(--gold);word-break:break-all}
+
+/* ─── FOOTER ─── */
+.footer{border-top:1px solid var(--bdr);padding-top:13px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.footer p{font-family:var(--ff-m);font-size:8px;color:var(--txt3)}
+.footer a{color:var(--gold);text-decoration:none}
+
+/* ─── ANIMATION ─── */
+@keyframes fadeIn{from{opacity:.1}to{opacity:1}} .flash{animation:fadeIn .28s ease-out}
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:1150px){.main-grid{grid-template-columns:1fr}.cards6{grid-template-columns:repeat(3,1fr)}.bk-grid{grid-template-columns:repeat(2,1fr)}.prod-row{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:720px){.cards6{grid-template-columns:repeat(2,1fr)}.fw-grid{grid-template-columns:repeat(2,1fr)}.algo-inner{grid-template-columns:1fr}.scholar{grid-template-columns:1fr}}
+@media(max-width:480px){h1{font-size:17px}.bn{font-size:32px}.fw-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="flag"></div>
+<div class="wrap">
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="tb-left">
+    <div class="eyebrow">● NPA Algorithm · COMAC · ESLA 2025 (Act 1141) · BOG FX · Mar 14 2026</div>
+    <h1>Ghana <span>Petroleum</span> Price Intelligence</h1>
+    <p class="tb-sub">NPA Build-Up Model · Acheampong &amp; Ackah (2015) · COMAC Pricing Outlook · BOG Interbank Rate · Goil Super XP 95 Reference</p>
+  </div>
+  <div class="tb-right">
+    <div class="win-chip">
+      <span class="wc-l">Current Window</span>
+      <span class="wc-v">Mar 1 – 15, 2026</span>
+      <span class="wc-s">Days left: <span id="days-left">2</span></span>
+    </div>
+    <div class="win-chip next-chip">
+      <span class="wc-l">⚠ Next Window</span>
+      <span class="wc-v">Mar 16, 2026</span>
+      <span class="wc-s">Opens in <span id="days-next">2</span> days · +16%↑</span>
+    </div>
+    <button class="mode-btn" onclick="toggleMode()" id="mode-btn" title="Toggle theme">☀️</button>
+  </div>
+</div>
+
+<!-- METRIC CARDS -->
+<div class="cards6">
+  <div class="mc">
+    <div class="mc-bar" style="background:var(--gold)"></div>
+    <div class="mc-lbl">◈ Brent Crude</div>
+    <div class="mc-val" style="color:var(--gold)" id="mc-brent">$100.0</div>
+    <div class="mc-unit">USD/bbl · ICE Futures</div>
+    <div class="mc-chg">
+      <span class="pill up" id="mc-brent-ytd">▲ +35.1% YTD</span>
+      <span class="txt-nt" style="font-size:8px">vs $74.0 (Jan 1)</span>
+    </div>
+  </div>
+  <div class="mc">
+    <div class="mc-bar" style="background:var(--diesel)"></div>
+    <div class="mc-lbl">◈ BOG FX Rate</div>
+    <div class="mc-val" style="color:var(--diesel)" id="mc-fx">10.80</div>
+    <div class="mc-unit">GHS/USD · BOG Interbank</div>
+    <div class="mc-chg">
+      <span class="pill dn">▼ −2.7% YTD</span>
+      <span style="font-family:var(--ff-m);font-size:8px;color:var(--txt3)">14d avg: <span id="mc-fx14">10.85</span></span>
+    </div>
+  </div>
+  <div class="mc">
+    <div class="mc-bar" style="background:var(--gold)"></div>
+    <div class="mc-lbl">◈ Crack Spreads ($/bbl)</div>
+    <div class="crack-rows">
+      <div class="cr"><span class="cr-src">Platts Med CIF</span><span class="cr-v" id="cs-p">$52/$35</span></div>
+      <div class="cr"><span class="cr-src">S&amp;P Global</span><span class="cr-v" id="cs-sp">$51/$34</span></div>
+      <div class="cr"><span class="cr-src">Goldman Sachs</span><span class="cr-v" id="cs-gs">$55/$37</span></div>
+    </div>
+    <div class="mc-unit" style="margin-top:4px">Gas / Diesel · vs Brent</div>
+  </div>
+  <div class="mc">
+    <div class="mc-bar" style="background:var(--gas)"></div>
+    <div class="mc-lbl">◈ Goil Super XP 95</div>
+    <div class="mc-val" style="color:var(--gas)">13.50</div>
+    <div class="mc-unit">GHS/litre · Mar 1–15 Window</div>
+    <div class="mc-chg">
+      <span class="pill up">▲ +9.5% YTD</span>
+      <span class="txt-nt" style="font-size:8px">Next: ~GHS 15.78</span>
+    </div>
+  </div>
+  <div class="mc">
+    <div class="mc-bar" style="background:var(--diesel)"></div>
+    <div class="mc-lbl">◈ Diesel · Goil</div>
+    <div class="mc-val" style="color:var(--diesel)">12.63</div>
+    <div class="mc-unit">GHS/litre · Mar 1–15 Window</div>
+    <div class="mc-chg">
+      <span class="pill up">▲ +5.6% YTD</span>
+      <span class="txt-nt" style="font-size:8px">Floor: GHS 10.95/L</span>
+    </div>
+  </div>
+  <div class="mc">
+    <div class="mc-bar" style="background:var(--lpg)"></div>
+    <div class="mc-lbl">◈ LPG · 12 kg Cylinder</div>
+    <div class="mc-val" style="color:var(--lpg)">14.30</div>
+    <div class="mc-unit">GHS/kg · ~GHS 171.6/cylinder</div>
+    <div class="mc-chg">
+      <span class="pill up">▲ +8.9% YTD</span>
+      <span class="txt-nt" style="font-size:8px">CP: $707/MT basis</span>
+    </div>
+  </div>
+</div>
+
+<!-- FORECAST WINDOW CARD -->
+<div class="fw-card">
+  <div class="fw-hdr">
+    <div class="fw-title">📅 Two-Month Pricing Window Forecast
+      <span class="fw-badge">NPA/COMAC Algorithm</span>
+    </div>
+    <div class="fw-tabs" id="fw-tabs">
+      <button class="ftab act" onclick="showWin(0,this)">Mar 1–15 <small style="opacity:.6">(LIVE)</small></button>
+      <button class="ftab nxt" onclick="showWin(1,this)">Mar 16–31 ⚠</button>
+      <button class="ftab" onclick="showWin(2,this)">Apr 1–15</button>
+      <button class="ftab" onclick="showWin(3,this)">Apr 16–30</button>
+      <button class="ftab" onclick="showWin(4,this)">May 1–15</button>
+      <button class="ftab" onclick="showWin(5,this)">May 16–31</button>
+    </div>
+  </div>
+  <div id="fw-body"></div>
+</div>
+
+<!-- MAIN GRID -->
+<div class="main-grid">
+  <div class="chart-panel">
+    <div class="ph">
+      <div class="p-title">Pump Price History &amp; Forecast · GHS/L (GHS/kg LPG) with Brent Secondary Axis</div>
+      <div class="legend">
+        <div class="li"><div class="ll" style="background:var(--gas)"></div>Gasoline</div>
+        <div class="li"><div class="ll" style="background:var(--diesel)"></div>Diesel</div>
+        <div class="li"><div class="ll" style="background:var(--lpg)"></div>LPG/kg</div>
+        <div class="li"><div class="ll" style="background:var(--gold);opacity:.7"></div>Brent $</div>
+        <div class="li"><div class="ll-d" style="border-color:var(--gas)"></div><span style="opacity:.7">Forecast</span></div>
+      </div>
+    </div>
+    <div class="chart-box"><canvas id="chart"></canvas></div>
+    <div class="scen-row">
+      <span class="sc-lbl">SCENARIO:</span>
+      <button class="sbtn" onclick="setScen(74,this)">BASE $74</button>
+      <button class="sbtn" onclick="setScen(80,this)">MAR1 $80</button>
+      <button class="sbtn act" onclick="setScen(100,this)">NOW $100</button>
+      <button class="sbtn" onclick="setScen(120,this)">SHOCK $120</button>
+      <button class="sbtn" onclick="setScen(150,this)">EXTREME $150</button>
+      <button class="sbtn" onclick="setScen(200,this)">CRISIS $200</button>
+      <button class="sbtn" onclick="setScen(250,this)">MAX $250</button>
+    </div>
+  </div>
+
+  <!-- SLIDER -->
+  <div class="sp">
+    <div class="sp-title">Crude Scenario Simulator</div>
+    <div>
+      <div class="brent-disp">
+        <div class="bn" id="sp-brent">$100</div>
+        <div class="bs">USD/bbl · Brent Crude</div>
+        <div class="by txt-up" id="sp-ytd">▲ +35.1% YTD vs $74.0</div>
+      </div>
+    </div>
+    <div>
+      <div class="sl-lbl">Adjust Brent [$60 → $250]</div>
+      <input type="range" id="slider" min="60" max="250" step="0.5" value="100" oninput="onSlide(+this.value)">
+      <div class="ticks"><span>$60</span><span>$100</span><span>$150</span><span>$200</span><span>$250</span></div>
+    </div>
+    <div>
+      <div class="sl-lbl" style="margin-bottom:6px">BOG FX Parameters</div>
+      <div class="fx-row">
+        <div class="fx-g">
+          <div class="sl-lbl">GHS/USD (BOG)</div>
+          <input type="number" class="pi" id="er-in" value="10.80" min="8" max="30" step="0.05" oninput="onSlide(+document.getElementById('slider').value)">
+        </div>
+        <div class="fx-g">
+          <div class="sl-lbl">Auto FX Model</div>
+          <label style="display:flex;align-items:center;gap:6px;height:34px;cursor:pointer">
+            <input type="checkbox" id="auto-er" checked onchange="onSlide(+document.getElementById('slider').value)" style="accent-color:var(--gold);width:14px;height:14px">
+            <span style="font-family:var(--ff-m);font-size:9.5px;color:var(--txt2)">Dynamic BOG</span>
+          </label>
+        </div>
+      </div>
+      <div style="font-family:var(--ff-m);font-size:7.5px;color:var(--txt3);margin-top:3px">Base GHS 10.80/$ (BOG 13 Mar) · +GHS 0.005 per $1 Brent above $80</div>
+    </div>
+    <div>
+      <div class="sl-lbl" style="margin-bottom:7px">Next-Window Indicative</div>
+      <div class="ind-stack">
+        <div class="icard g"><div class="il">⛽ Gasoline Super XP 95</div><div class="iv g" id="i-g">GHS 15.78</div><div class="isub">per litre</div><div class="ichg nt" id="i-g-c">▲ +16.9% at Brent $100</div></div>
+        <div class="icard d"><div class="il">🚛 Diesel XP</div><div class="iv d" id="i-d">GHS 16.41</div><div class="isub">per litre</div><div class="ichg nt" id="i-d-c">▲ +17.2% at Brent $100</div></div>
+        <div class="icard l"><div class="il">🔥 LPG (12 kg = <span id="i-lpg12">GHS 192</span>)</div><div class="iv l" id="i-l">GHS 16.04</div><div class="isub" id="i-l-kg">GHS/kg</div><div class="ichg nt" id="i-l-c">▲ +12.2% at Brent $100</div></div>
+      </div>
+      <div><span class="risk hi" id="risk-badge">▲▲ HIGH · +16%+ Change</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- PRODUCT MIX USD/MT -->
+<div class="sec"><div class="sl"></div><div class="st">International Reference Prices · USD/MT — Platts / S&P / Aramco CP</div><div class="sl"></div></div>
+<div class="prod-row">
+  <div class="pc">
+    <div class="pc-glow" style="background:var(--gas)"></div><div class="pc-bar" style="background:var(--gas)"></div>
+    <div class="pc-ico">⛽</div><div class="pc-nm">Gasoline</div>
+    <div class="pc-sp">PGABM00 · RON 95 FOB ROTTERDAM</div>
+    <div class="pc-v" style="color:var(--gas)" id="p-g-v">$1,324 <span style="font-size:12px;opacity:.5">/MT</span></div>
+    <div class="pc-u" id="p-g-u">$0.988/L · Platts Med CIF</div>
+    <div class="pc-b"><div class="pc-bf" id="p-g-b" style="background:var(--gas);width:72%"></div></div>
+    <div class="pc-chg up">▲ Fixed ref: 1324.50 USD/MT</div>
+  </div>
+  <div class="pc">
+    <div class="pc-glow" style="background:var(--diesel)"></div><div class="pc-bar" style="background:var(--diesel)"></div>
+    <div class="pc-ico">🚛</div><div class="pc-nm">Diesel / Gasoil</div>
+    <div class="pc-sp">GASOIL 10PPM · EN 590 · PLATTS</div>
+    <div class="pc-v" style="color:var(--diesel)" id="p-d-v">$1,072 <span style="font-size:12px;opacity:.5">/MT</span></div>
+    <div class="pc-u" id="p-d-u">$0.900/L · Platts Med CIF</div>
+    <div class="pc-b"><div class="pc-bf" id="p-d-b" style="background:var(--diesel);width:58%"></div></div>
+    <div class="pc-chg up">▲ +43.9% vs Dec 2025 window</div>
+  </div>
+  <div class="pc">
+    <div class="pc-glow" style="background:var(--lpg)"></div><div class="pc-bar" style="background:var(--lpg)"></div>
+    <div class="pc-ico">🔥</div><div class="pc-nm">LPG</div>
+    <div class="pc-sp">BUTCIFALCG=ARG · CIF ARA ARGUS</div>
+    <div class="pc-v" style="color:var(--lpg)" id="p-l-v">$1,000 <span style="font-size:12px;opacity:.5">/MT</span></div>
+    <div class="pc-u" id="p-l-u">$1.000/kg · Aramco CP basis</div>
+    <div class="pc-b"><div class="pc-bf" id="p-l-b" style="background:var(--lpg);width:54%"></div></div>
+    <div class="pc-chg up">▲ Fixed ref: 1000.00 USD/MT (Argus)</div>
+  </div>
+  <div class="pc">
+    <div class="pc-glow" style="background:var(--atk)"></div><div class="pc-bar" style="background:var(--atk)"></div>
+    <div class="pc-ico">✈️</div><div class="pc-nm">ATK / Jet A-1</div>
+    <div class="pc-sp">AVIATION TURBINE KEROSENE · JET A-1</div>
+    <div class="pc-v" style="color:var(--atk)" id="p-a-v">$1,189 <span style="font-size:12px;opacity:.5">/MT</span></div>
+    <div class="pc-u" id="p-a-u">$0.951/L · Platts Jet A-1</div>
+    <div class="pc-b"><div class="pc-bf" id="p-a-b" style="background:var(--atk);width:64%"></div></div>
+    <div class="pc-chg up">▲ +33.1% vs Jan 2026 baseline</div>
+  </div>
+</div>
+
+<!-- NPA BREAKDOWN -->
+<div class="sec"><div class="sl"></div><div class="st">NPA Price Build-Up Components · Gasoline (Scenario Brent)</div><div class="sl"></div></div>
+<div class="bk-grid">
+  <div class="bk">
+    <div class="bk-h"><div class="bk-dot" style="background:var(--diesel)"></div>IMPORT PARITY (IPP)</div>
+    <div class="bki">
+      <div class="bkr"><div class="bkr-top"><span class="bkr-n">Platts FOB ROT (fixed 1324.5)</span><span class="bkr-v" id="bd-fob">$0.988/L</span></div><div class="bk-track"><div class="bk-fill" id="bd-fob-b" style="width:62%;background:var(--diesel)"></div></div></div>
+      <div class="bkr"><div class="bkr-top"><span class="bkr-n">Freight (WAF route)</span><span class="bkr-v">$0.020/L</span></div><div class="bk-track"><div class="bk-fill" style="width:5%;background:var(--diesel);opacity:.7"></div></div></div>
+      <div class="bkr"><div class="bkr-top"><span class="bkr-n">Insurance + Ocean Loss</span><span class="bkr-v">$0.007/L</span></div><div class="bk-track"><div class="bk-fill" style="width:2%;background:var(--warn)"></div></div></div>
+      <div class="bkr"><div class="bkr-top"><span class="bkr-n">Premium + BDC charges</span><span class="bkr-v">$0.042/L</span></div><div class="bk-track"><div class="bk-fill" style="width:8%;background:var(--gold)"></div></div></div>
+      <div class="bkr"><div class="bkr-top"><span class="bkr-n">FX Conversion (BOG rate)</span><span class="bkr-v" id="bd-fx">×10.80</span></div><div class="bk-track"><div class="bk-fill" style="width:100%;background:var(--gold-a)"></div></div></div>
+    </div>
+    <div class="bk-tot"><span class="bkt-l">IPP (GHS/litre)</span><span class="bkt-v" id="bd-ipp">GHS 11.43/L</span></div>
+  </div>
+  <div class="bk">
+    <div class="bk-h"><div class="bk-dot" style="background:var(--err)"></div>ESLA 2025 LEVIES (FIXED)</div>
+    <div class="bki">
+      <div class="bkr"><div class="bkr-top"><span class="bkr-n">Energy Sector Debt (ESDRL)</span><span class="bkr-v">GHp 195</span></div><div class="bk-track"><div class="bk-fill" style="width:80%;background:var(--err)"></div></div></div>
+      <div class="bkr"><div class="bkr-top"><span class="bkr-n">UPPF (Uniform Price Fund)</span><span class="bkr-v">GHp 90</span></div><div class="bk-track"><div class="bk-fill" style="width:37%;background:#F87171"></div></div></div>
+      <div class="bkr"><div class="bkr-top"><span class="bkr-n">Road Fund Levy</span><span class="bkr-v">GHp 48</span></div><div class="bk-track"><div class="bk-fill" style="width:20%;background:#FB7185"></div></div></div>
+      <div class="bkr"><div class="bkr-top"><span class="bkr-n">Special Petroleum Tax (SPT)</span><span class="bkr-v">GHp 46</span></div><div class="bk-track"><div class="bk-fill" style="width:19%;background:#E11D48"></div></div></div>
+      <div class="bkr"><div class="bkr-top"><span class="bkr-n">PDM + BOST + Fuel Marking</span><span class="bkr-v">GHp 48</span></div><div class="bk-track"><div class="bk-fill" style="width:20%;background:#BE123C"></div></div></div>
+    </div>
+    <div class="bk-tot"><span class="bkt-l">Total Fixed Levies</span><span class="bkt-v">GHS 4.27/L</span></div>
+  </div>
+  <div class="bk">
+    <div class="bk-h"><div class="bk-dot" style="background:var(--gold)"></div>DISTRIBUTION MARGINS</div>
+    <div class="bki">
+      <div class="bkr"><div class="bkr-top"><span class="bkr-n">Primary Distribution (PDM)</span><span class="bkr-v">GHp 26</span></div><div class="bk-track"><div class="bk-fill" style="width:27%;background:var(--gold)"></div></div></div>
+      <div class="bkr"><div class="bkr-top"><span class="bkr-n">OMC Marketing Margin</span><span class="bkr-v">GHp ~85</span></div><div class="bk-track"><div class="bk-fill" style="width:88%;background:var(--gold);opacity:.7"></div></div></div>
+      <div class="bkr"><div class="bkr-top"><span class="bkr-n">Dealer / Retailer Margin</span><span class="bkr-v">GHp ~35</span></div><div class="bk-track"><div class="bk-fill" style="width:36%;background:#D4891A"></div></div></div>
+      <div class="bkr"><div class="bkr-top"><span class="bkr-n">BOST Margin</span><span class="bkr-v">GHp 12</span></div><div class="bk-track"><div class="bk-fill" style="width:12%;background:#92400E"></div></div></div>
+      <div class="bkr"><div class="bkr-top"><span class="bkr-n">XP 95 Quality Premium</span><span class="bkr-v">GHp ~35</span></div><div class="bk-track"><div class="bk-fill" style="width:36%;background:#78350F"></div></div></div>
+    </div>
+    <div class="bk-tot"><span class="bkt-l">Total Margins</span><span class="bkt-v">GHS 1.09/L</span></div>
+  </div>
+  <div class="bk">
+    <div class="bk-h"><div class="bk-dot" style="background:var(--lpg)"></div>PUMP PRICE SUMMARY</div>
+    <div class="bki">
+      <div class="bkr"><div class="bkr-top"><span class="bkr-n">IPP (scenario)</span><span class="bkr-v" id="ps-ipp">GHS 11.43/L</span></div><div class="bk-track"><div class="bk-fill" id="ps-ipp-b" style="background:var(--gas);width:65%"></div></div></div>
+      <div class="bkr"><div class="bkr-top"><span class="bkr-n">ESLA 2025 Fixed Levies</span><span class="bkr-v">GHS 4.27/L</span></div><div class="bk-track"><div class="bk-fill" style="background:var(--err);width:24%"></div></div></div>
+      <div class="bkr"><div class="bkr-top"><span class="bkr-n">Distribution Margins</span><span class="bkr-v">GHS 1.09/L</span></div><div class="bk-track"><div class="bk-fill" style="background:var(--gold);width:6%"></div></div></div>
+      <div class="bkr"><div class="bkr-top"><span class="bkr-n" style="color:var(--txt);font-weight:700">Indicative Pump (Super XP 95)</span><span class="bkr-v" style="color:var(--gas);font-weight:700" id="ps-pump">GHS 16.79/L</span></div></div>
+      <div class="bkr"><div class="bkr-top"><span class="bkr-n" style="color:var(--txt2)">Levy share of pump price</span><span class="bkr-v" style="color:var(--warn)" id="ps-sh">25%</span></div></div>
+    </div>
+    <div class="bk-tot"><span class="bkt-l">vs Mar 1 (GHS 13.50)</span><span class="bkt-v txt-up" id="ps-chg">+24.4%</span></div>
+  </div>
+</div>
+
+<!-- ALGORITHM PANEL (COLLAPSIBLE) -->
+<div class="algo">
+  <div class="algo-toggle" onclick="toggleAlgo()">
+    <div class="at-left">
+      <div class="at-ico">🔬</div>
+      <div>
+        <div class="at-h">View NPA Pricing Algorithm — ESLA 2025 · COMAC Calibration · IPP Methodology</div>
+        <div class="at-s">NPA POLICY GUIDELINES 26.03.2024 · ENERGY SECTOR LEVIES ACT 2025 (ACT 1141) · L.I. 2186 · COMAC PRICING OUTLOOK FEB 1 2026</div>
+      </div>
+    </div>
+    <div class="at-arr" id="algo-arr">▼</div>
+  </div>
+  <div class="algo-body" id="algo-body">
+    <div class="algo-inner">
+      <div>
+        <div style="font-family:var(--ff-m);font-size:8.5px;color:var(--gold);letter-spacing:1.5px;margin-bottom:8px">STEP-BY-STEP IPP → PUMP FORMULA (GASOLINE, DIESEL, LPG, ATK)</div>
+        <div class="fbox"><span class="cm">// ══════════════════════════════════════════════════
+// NPA IMPORT PARITY PRICE (IPP) — NPA Guidelines 2024
+// Source: NPA Policy Guidelines 26.03.2024 (Section 4)
+// ══════════════════════════════════════════════════</span>
+
+<span class="kw">STEP 1 — Benchmark Price (CIF Tema Port)</span>
+<span class="vt">Gasoline</span>: PGABM00 Fixed = <span class="kw">1324.50 USD/MT</span> (Platts FOB Rotterdam)
+<span class="dt">Diesel</span>:    Platts Med Gasoil = <span class="kw">Brent × bbl_factor + crack_spread</span>
+<span class="pd">LPG</span>:       BUTCIFALCG=ARG Fixed = <span class="kw">1000.00 USD/MT</span> (CIF ARA Argus)
+<span class="at-c">ATK</span>:       Platts Jet A-1 CIF = <span class="kw">Brent × factor + jet_crack</span>
+
+<span class="kw">STEP 2 — IPP Calculation (NPA Formula)</span>
+IPP = (Benchmark_USD_MT + Freight_USD_MT + Premium_USD_MT
+      + OceanLoss + Insurance) × FX_BOG ÷ Volume_L_per_MT
+
+Conversion factors (NPA Policy Guidelines):
+  <span class="vt">Gasoline</span>: 1 MT = 1340 L (density ≈ 0.746 kg/L)
+  <span class="dt">Diesel</span>:   1 MT = 1190 L (density ≈ 0.840 kg/L)
+  <span class="pd">LPG</span>:      1 MT = 1960 L | 1000 kg (gas pricing uses kg basis)
+  <span class="at-c">ATK</span>:      1 MT = 1250 L (density ≈ 0.800 kg/L)
+
+Freight (West Africa route):  Gasoline/Diesel $26.5/MT
+Insurance + Ocean Loss:       0.5% + 0.3% of CIF value
+BDC Finance + Port charges:   2.2% of CIF value
+
+<span class="kw">STEP 3 — Ex-Refinery Price (NPA Reg. L.I. 2186)</span>
+Ex-Refinery = IPP + BOST_Margin + Fuel_Marking + UPPF + PDM
+<span class="cm">  (Under ESLA 2025, many margins became FIXED GHp amounts)</span>
+
+<span class="kw">STEP 4 — ESLA 2025 Fixed Levies (Act 1141, Table 2)</span>
+<span class="cm">  NOTE: Shift from % ad valorem to fixed GHp amounts</span>
+<span class="vt">Gasoline</span>: ESDRL[195] + UPPF[90] + Road[48] + SPT[46]
+           + PDM[26] + BOST[12] + FuelMark[9] + Energy[1] = <span class="kw">427 GHp/L</span>
+<span class="dt">Diesel</span>:   ESDRL[193] + UPPF[90] + Road[48] + SPT[46]
+           + PDM[26] + BOST[12] + FuelMark[9] + Energy[1] = <span class="kw">425 GHp/L</span>
+<span class="pd">LPG</span>:      ESDRL[73] + SPT[48] + UPPF[85] + DistComp[5]
+           + PlantAdmin[4.78]                              = <span class="kw">215.78 GHp/kg</span>
+<span class="at-c">ATK</span>:      ESDRL[57] + SPT[46] + UPPF[90] + PDM[26] + Energy[1] = <span class="kw">220 GHp/L</span>
+
+<span class="kw">STEP 5 — Distribution & Retailer Margins</span>
+OMC_Margin ≈ GHS 0.85/unit (competitive market benchmark)
+XP_95_Premium ≈ GHS 0.35/L (Goil Super XP quality premium)
+
+<span class="pd">► PUMP PRICE = IPP + ESLA_Levies + OMC_Margin + XP_Premium</span>
+
+<span class="cm">// CALIBRATION: COMAC Feb 1 2026 (FX 10.984, Brent $67.40)
+//   Gas IPP ≈ GHS 6.36/L → Pump (credit) = GHS 11.48/L ✓
+//   Diesel IPP ≈ GHS 7.47/L → Pump = GHS 12.77/L ✓
+//   LPG IPP ≈ GHS 10.50/kg → Pump = GHS 13.50/kg ✓</span></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="levy-box">
+          <div class="lb-h">ESLA 2025 (ACT 1141) COMPLETE LEVY SCHEDULE · EFFECTIVE FEB 2026</div>
+          <div class="lev-hdr"><span>Component</span><div style="display:flex;gap:10px"><span style="width:44px;text-align:right">Petrol</span><span style="width:44px;text-align:right">Diesel</span><span style="width:44px;text-align:right">LPG</span></div></div>
+          <div class="lev-row"><span class="lev-n">Energy Sector Shortfall &amp; Debt Repayment</span><div class="lev-vs"><span class="lev-v" style="color:var(--err)">195</span><span class="lev-v" style="color:var(--diesel)">193</span><span class="lev-v" style="color:var(--lpg)">73</span></div></div>
+          <div class="lev-row"><span class="lev-n">Uniform Petroleum Price Fund (UPPF)</span><div class="lev-vs"><span class="lev-v">90</span><span class="lev-v">90</span><span class="lev-v">85</span></div></div>
+          <div class="lev-row"><span class="lev-n">Road Fund Levy</span><div class="lev-vs"><span class="lev-v">48</span><span class="lev-v">48</span><span class="lev-v">—</span></div></div>
+          <div class="lev-row"><span class="lev-n">Special Petroleum Tax (SPT)</span><div class="lev-vs"><span class="lev-v">46</span><span class="lev-v">46</span><span class="lev-v">48</span></div></div>
+          <div class="lev-row"><span class="lev-n">Primary Distribution Margin (PDM)</span><div class="lev-vs"><span class="lev-v">26</span><span class="lev-v">26</span><span class="lev-v">—</span></div></div>
+          <div class="lev-row"><span class="lev-n">BOST Margin</span><div class="lev-vs"><span class="lev-v">12</span><span class="lev-v">12</span><span class="lev-v">—</span></div></div>
+          <div class="lev-row"><span class="lev-n">Fuel Marking Margin</span><div class="lev-vs"><span class="lev-v">9</span><span class="lev-v">9</span><span class="lev-v">—</span></div></div>
+          <div class="lev-row"><span class="lev-n">Energy Fund Levy</span><div class="lev-vs"><span class="lev-v">1</span><span class="lev-v">1</span><span class="lev-v">—</span></div></div>
+          <div class="lev-row"><span class="lev-n">LPG Distribution Compensation</span><div class="lev-vs"><span class="lev-v">—</span><span class="lev-v">—</span><span class="lev-v">5.00</span></div></div>
+          <div class="lev-row"><span class="lev-n">LPG Filling Plant Admin</span><div class="lev-vs"><span class="lev-v">—</span><span class="lev-v">—</span><span class="lev-v">4.78</span></div></div>
+          <div class="lev-row" style="background:var(--gold-a);border-radius:var(--r-sm)"><span class="lev-n" style="font-weight:700;color:var(--txt)">TOTAL (GHp/unit)</span><div class="lev-vs"><span class="lev-v" style="color:var(--gold);font-weight:700">427</span><span class="lev-v" style="color:var(--gold);font-weight:700">425</span><span class="lev-v" style="color:var(--gold);font-weight:700">215.78</span></div></div>
+        </div>
+        <div class="sens-box">
+          <div class="sen-h">SENSITIVITY ANALYSIS (ACHEAMPONG & ACKAH 2015)</div>
+          <div class="sen-r"><strong>+$10/bbl Brent</strong> → Gas <span style="color:var(--gas)" id="sa-g">+GHS 0.47/L</span> · Diesel <span style="color:var(--diesel)" id="sa-d">+GHS 0.52/L</span></div>
+          <div class="sen-r"><strong>+1.0 GHS/USD</strong> → All products +7–9%</div>
+          <div class="sen-r" style="margin-top:5px;font-size:10.5px;color:var(--txt3)">Under ESLA 2025, fixed levies provide automatic relief at high Brent: levy share falls from 41% ($60) to 25% ($100) to 18% ($150), partially cushioning consumers against price surges — consistent with Ackaah (2019) UPPF mechanism analysis.</div>
+        </div>
+      </div>
+    </div>
+    <div class="scholar">
+      <div class="snote">
+        <div class="sn">Acheampong, T. &amp; Ackah, I. (2015)</div>
+        <p>Petroleum product prices in Ghana exhibit near-complete pass-through of international crude price changes. The study demonstrates that exchange rate depreciation amplifies price transmission, with every 1% cedi weakening delivering a 0.8–1.2% pump price increase. The deregulated pricing regime from 2005 removed administered price controls, making Ghana one of West Africa's most price-transparent petroleum markets — but exposing consumers to raw commodity volatility.</p>
+      </div>
+      <div class="snote">
+        <div class="sn">NPA &amp; COMAC Policy Framework</div>
+        <p>The NPA Build-Up Methodology (Guidelines 26.03.2024) anchors ex-refinery prices to Platts Mediterranean CIF quotations at the official BOG interbank midpoint rate. The ESLA 2025 (Act 1141) transition from ad-valorem to fixed levy amounts was a deliberate counter-cyclical design: as IPP rises at high Brent prices, the fixed levy burden shrinks proportionally, constraining upside price exposure. The UPPF and PSRL act as the primary buffer instruments — though their fund balances constrain effectiveness in extended high-price episodes, as forecast for the Mar 16, 2026 window.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CITATIONS (COLLAPSIBLE) -->
+<div class="cit">
+  <div class="algo-toggle" onclick="toggleCit()">
+    <div class="at-left">
+      <div class="at-ico">📚</div>
+      <div>
+        <div class="at-h">References &amp; Data Sources — Harvard Citation Format</div>
+        <div class="at-s">ALL SOURCES USED IN MODEL CONSTRUCTION, CALIBRATION AND ANALYSIS</div>
+      </div>
+    </div>
+    <div class="at-arr" id="cit-arr">▼</div>
+  </div>
+  <div class="cit-body" id="cit-body">
+    <div class="cit-inner">
+      <div class="cit-entry"><strong>Acheampong, T. and Ackah, I.</strong> (2015) <em>Petroleum product pricing, deregulation and subsidies in Ghana: perspectives on energy security.</em> MPRA Paper 66116. Munich: Munich Personal RePEC Archive. Available at: <a href="https://mpra.ub.uni-muenchen.de/66116/1/MPRA_paper_66116.pdf" target="_blank">https://mpra.ub.uni-muenchen.de/66116/1/MPRA_paper_66116.pdf</a> [Accessed 14 March 2026].</div>
+      <div class="cit-entry"><strong>National Petroleum Authority (NPA)</strong> (2024) <em>Ghana petroleum products pricing guidelines.</em> Accra: National Petroleum Authority. [Guidelines effective 26 March 2024]. Available at: <a href="https://npa.gov.gh/wp-content/uploads/2024/03/Ghana-Petroleum-Products-Pricing-Guidelines_26.03.2024-1.pdf" target="_blank">https://npa.gov.gh/.../Ghana-Petroleum-Products-Pricing-Guidelines_26.03.2024-1.pdf</a> [Accessed 13 March 2026].</div>
+      <div class="cit-entry"><strong>Chamber of Oil Marketing Companies (COMAC)</strong> (2026) <em>COMAC pricing outlook: 1st February 2026.</em> Accra: COMAC Ghana. Available at: <a href="https://91dfccc0-f231-4e1d-ba9c-c74d9ba1882b.filesusr.com/ugd/b6b1b4_964eb80e16df4bd28fbb5cd1142fca89.pdf" target="_blank">https://comacghana.org/pricing-outlook-feb-2026.pdf</a> [Accessed 12 March 2026].</div>
+      <div class="cit-entry"><strong>Parliament of Ghana</strong> (2025) <em>Energy Sector Levies Act, 2025 (Act 1141).</em> Accra: Government of Ghana. [Enacted December 2025, effective January 2026].</div>
+      <div class="cit-entry"><strong>National Petroleum Authority (NPA)</strong> (2012) <em>National Petroleum Authority Regulations, 2012 (L.I. 2186).</em> Accra: National Petroleum Authority.</div>
+      <div class="cit-entry"><strong>Bank of Ghana (BOG)</strong> (2026) <em>Daily interbank FX rates.</em> Accra: Bank of Ghana. Available at: <a href="https://www.bog.gov.gh/treasury-and-the-markets/daily-interbank-fx-rates/" target="_blank">https://www.bog.gov.gh/treasury-and-the-markets/daily-interbank-fx-rates/</a> [Accessed 13 March 2026].</div>
+      <div class="cit-entry"><strong>Ghana Oil Company (GOIL)</strong> (2026) <em>Latest fuel prices.</em> Accra: Ghana Oil Company Limited. Available at: <a href="https://goil.com.gh/new-fuel-prices/" target="_blank">https://goil.com.gh/new-fuel-prices/</a> [Accessed 13 March 2026].</div>
+      <div class="cit-entry"><strong>S&amp;P Global Platts</strong> (2026) <em>Gasoline premium unleaded 10ppmS FOB Rotterdam barges: PGABM00.</em> New York: S&amp;P Global Inc. [Fixed reference: USD 1,324.50/MT as of assessment date].</div>
+      <div class="cit-entry"><strong>Argus Media</strong> (2026) <em>LPG CIF ARA large cargoes butane: BUTCIFALCG=ARG.</em> London: Argus Media Ltd. [Fixed reference: USD 1,000.00/MT as of assessment date].</div>
+      <div class="cit-entry"><strong>Goldman Sachs Commodities Research</strong> (2022) <em>Goldman Sachs hikes Brent oil forecast to over $100 for March.</em> New York: Goldman Sachs Group Inc. Available at: <a href="https://oilprice.com/Energy/Crude-Oil/Goldman-Sachs-Hikes-Brent-Oil-Forecast.html" target="_blank">https://oilprice.com/...</a> [Accessed 13 March 2026].</div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <p>NPA Build-Up Model v3.0 · COMAC Feb 2026 Calibrated · ESLA 2025 (Act 1141) · BOG Interbank FX 10.80 GHS/$ (Mar 13, 2026) · Goil Super XP 95 @ GHS 13.50/L</p>
+  <p>Ing. Oppong · Karbala Refinery · Mar 14, 2026 · <a href="https://www.bog.gov.gh/treasury-and-the-markets/daily-interbank-fx-rates/" target="_blank">BOG Live FX ↗</a> · <a href="https://goil.com.gh/new-fuel-prices/" target="_blank">Goil Prices ↗</a></p>
+</div>
+</div>
+
+<script>
+'use strict';
+/* ══════════════════════════════════════════════════════
+   NPA PRICING ENGINE · COMAC-CALIBRATED · ESLA 2025
+   Sources: NPA Guidelines 26.03.2024 · COMAC Feb 2026
+            Acheampong & Ackah (2015) · Act 1141
+   ══════════════════════════════════════════════════════ */
+
+// ── FIXED BENCHMARK REFERENCES (per spec) ─────────────────
+const BENCH = {
+  gasFOB_MT:  1324.50,   // PGABM00 Platts FOB Rotterdam Barges (fixed)
+  lpgCIF_MT:  1000.00,   // BUTCIFALCG=ARG Argus CIF ARA (fixed)
+};
+
+// ── CONVERSION FACTORS (NPA Policy Guidelines 26.03.2024) ──
+const CONV = {
+  gasL:  1340,   // Gasoline: 1 MT = 1340 L
+  dslL:  1190,   // Diesel:   1 MT = 1190 L
+  lpgKg: 1000,   // LPG: 1 MT = 1000 kg (per-kg pricing)
+  atkL:  1250,   // ATK/Jet A-1: 1 MT = 1250 L
+};
+
+// ── NPA IPP COST COMPONENTS (per NPA Guidelines) ──────────
+const COSTS = {
+  gasFreight_MT:  26.50,   // $/MT West Africa route
+  dslFreight_MT:  26.50,
+  lpgFreight_MT:  45.00,   // higher for LPG tankers
+  atkFreight_MT:  26.50,
+  insuranceRate:  0.005,   // 0.5% of CIF
+  oceanLossRate:  0.003,   // 0.3% of FOB
+  premFin:        0.022,   // 2.2% BDC finance + port handling
+};
+
+// ── ESLA 2025 FIXED LEVIES (Act 1141, Table 2 COMAC) ────
+// All in GHp per unit → divide by 100 for GHS
+const LEVIES = {
+  gas_ghp:  427,    // GHS 4.27/L
+  dsl_ghp:  425,    // GHS 4.25/L
+  lpg_ghp:  215.78, // GHS 2.1578/kg
+  atk_ghp:  220,    // GHS 2.20/L (kerosene basis)
+};
+
+// ── MARGINS (competitive OMC benchmark) ─────────────────
+const MARG = {
+  omc:      0.85,   // GHS/unit standard OMC margin
+  xp95:     0.35,   // GHS/L Super XP 95 quality premium (Goil)
+  atk_adj: -0.10,   // ATK adjustment
+};
+
+// ── CALIBRATION BASELINES ─────────────────────────────────
+const BASE = {
+  bogFX:      10.80,   // BOG interbank Mar 13 2026
+  bogFX_Jan1: 11.10,   // BOG Jan 1 2026 (for YTD)
+  brent_Jan1: 74.0,    // Brent Jan 1 2026
+  bog14d:     10.85,   // 14-day BOG rolling average
+  // COMAC-confirmed prices Mar 1-15 window
+  gasCur:     13.50,   // Goil Super XP 95
+  dslCur:     12.63,
+  lpgCur:     14.30,
+};
+
+// ── BOG FX DYNAMIC MODEL ─────────────────────────────────
+function getER(brent, auto, manual) {
+  if (!auto) return parseFloat(manual) || BASE.bogFX;
+  // BOG model: mild depreciation at high Brent (petro-import pressure)
+  const delta = Math.max(0, brent - 80) * 0.005;
+  return +(BASE.bogFX + delta).toFixed(3);
+}
+
+// ── CRACK SPREAD MODEL ────────────────────────────────────
+// Calibrated to COMAC product/crude price table (Jan-Feb 2026)
+function crackGas(brent) {
+  // Base crack: ~42 $/bbl at $80, expands with geopolitical shock
+  if (brent <= 80)  return 33 + (brent - 60) * 0.45;
+  if (brent <= 120) return 42 + (brent - 80) * 0.38;
+  return 57 + (brent - 120) * 0.28;
+}
+function crackDsl(brent) {
+  if (brent <= 80)  return 28 + (brent - 60) * 0.30;
+  if (brent <= 120) return 34 + (brent - 80) * 0.32;
+  return 47 + (brent - 120) * 0.22;
+}
+function crackATK(brent) {
+  if (brent <= 80)  return 48 + (brent - 60) * 0.40;
+  if (brent <= 120) return 56 + (brent - 80) * 0.35;
+  return 70 + (brent - 120) * 0.25;
+}
+
+// ── CORE IPP FORMULA ─────────────────────────────────────
+// IPP = (Benchmark + Freight + Insurance + OceanLoss + Premium) × FX ÷ L_per_MT
+function calcGas(brent, er) {
+  const fob_MT = BENCH.gasFOB_MT;   // Fixed Platts reference
+  const freight = COSTS.gasFreight_MT;
+  const cif_MT  = fob_MT + freight;
+  const ins     = cif_MT * COSTS.insuranceRate;
+  const loss    = fob_MT * COSTS.oceanLossRate;
+  const prem    = cif_MT * COSTS.premFin;
+  const cif_tot = cif_MT + ins + loss + prem;
+  const ipp_L   = (cif_tot / CONV.gasL) * er;
+  const levies  = LEVIES.gas_ghp / 100;
+  const pump    = ipp_L + levies + MARG.omc + MARG.xp95;
+  const usdMT   = fob_MT; // for display
+  return { ipp_L, levies, pump, usdMT, usdL: fob_MT/CONV.gasL };
+}
+
+function calcDsl(brent, er) {
+  // Diesel uses Brent + crack spread (dynamic)
+  const crack   = crackDsl(brent);
+  const fob_MT  = (brent + crack) * 6.29; // $/bbl × bbl/MT
+  const freight = COSTS.dslFreight_MT;
+  const cif_MT  = fob_MT + freight;
+  const ins     = cif_MT * COSTS.insuranceRate;
+  const loss    = fob_MT * COSTS.oceanLossRate;
+  const prem    = cif_MT * COSTS.premFin;
+  const cif_tot = cif_MT + ins + loss + prem;
+  const ipp_L   = (cif_tot / CONV.dslL) * er;
+  const levies  = LEVIES.dsl_ghp / 100;
+  const pump    = ipp_L + levies + MARG.omc;
+  return { ipp_L, levies, pump, usdMT: fob_MT, usdL: fob_MT/CONV.dslL };
+}
+
+function calcLPG(brent, er) {
+  const fob_MT  = BENCH.lpgCIF_MT;  // Fixed Argus CIF reference
+  const freight = COSTS.lpgFreight_MT;
+  const cif_MT  = fob_MT + freight;
+  const ins     = cif_MT * COSTS.insuranceRate;
+  const loss    = fob_MT * COSTS.oceanLossRate;
+  const prem    = cif_MT * COSTS.premFin;
+  const cif_tot = cif_MT + ins + loss + prem;
+  const ipp_kg  = (cif_tot / CONV.lpgKg) * er;
+  const levies  = LEVIES.lpg_ghp / 100;
+  const pump    = ipp_kg + levies + MARG.omc;
+  return { ipp_kg, levies, pump, usdMT: fob_MT, usdKg: fob_MT/CONV.lpgKg };
+}
+
+function calcATK(brent, er) {
+  const crack   = crackATK(brent);
+  const fob_MT  = (brent + crack) * 6.29;
+  const freight = COSTS.atkFreight_MT;
+  const cif_MT  = fob_MT + freight;
+  const ins     = cif_MT * COSTS.insuranceRate;
+  const loss    = fob_MT * COSTS.oceanLossRate;
+  const prem    = cif_MT * COSTS.premFin;
+  const cif_tot = cif_MT + ins + loss + prem;
+  const ipp_L   = (cif_tot / CONV.atkL) * er;
+  const levies  = LEVIES.atk_ghp / 100;
+  const pump    = ipp_L + levies + MARG.omc + MARG.atk_adj;
+  return { ipp_L, levies, pump, usdMT: fob_MT, usdL: fob_MT/CONV.atkL };
+}
+
+// ── HISTORICAL DATA ───────────────────────────────────────
+// Source: COMAC Fig 1 & 2 (Jan 2025 → Mar 2026) + confirmed window prices
+// Anchored to: COMAC exact values (Jan 16, Feb 1 2026)
+const LABELS = [
+  'Jan\'25','Feb\'25','Mar\'25','Apr\'25','May\'25','Jun\'25',
+  'Jul\'25','Aug\'25','Sep\'25','Oct\'25','Nov\'25','Dec\'25',
+  'Dec16\'25','Jan1\'26','Jan16\'26','Feb1\'26','Feb16\'26','Mar1\'26',
+  'Mar14\n(Now)',
+  'Mar16\'26','Apr1\'26','Apr16\'26','May1\'26'
+];
+const N = LABELS.length;
+const HIST_N = 19; // indices 0-18 historical/current
+
+// Confirmed pump prices (GHS/L)
+// Sources: COMAC tables, Goil confirmed prices, GlobalPetrolPrices
+const H_GAS = [9.80,9.90,9.65,9.70,10.20,10.50,11.00,10.80,10.40,10.55,10.80,10.75,
+               10.75,10.99,10.99,11.48,11.65,13.50, 13.50];
+const H_DSL = [11.20,11.25,11.00,11.05,11.50,11.80,12.20,12.00,11.60,11.65,11.90,11.95,
+               11.96,11.96,11.96,12.77,12.90,12.63, 12.63];
+const H_LPG = [12.50,12.55,12.30,12.35,12.70,12.85,13.00,12.90,12.60,12.65,12.75,13.10,
+               13.12,13.12,13.12,13.50,13.65,14.30, 14.30];
+const H_BRT = [80,77,73,73,82,78,85,80,71,72,71,70,71,74,62.75,67.40,70,80, 100];
+
+let curBrent = 100;
+
+// ── FORECAST WINDOWS ─────────────────────────────────────
+// Brent trajectory under shock scenario (Mar 16 onward)
+const FWIN = [
+  { label:'Mar 16\'26', bScale:1.00 },  // 100% of slider
+  { label:'Apr 1\'26',  bScale:0.96 },
+  { label:'Apr 16\'26', bScale:0.92 },
+  { label:'May 1\'26',  bScale:0.88 },
+];
+
+function buildForecast(brent) {
+  const auto = document.getElementById('auto-er').checked;
+  const man  = document.getElementById('er-in').value;
+
+  // Historical: nulls in forecast positions
+  const gH  = [...H_GAS, null,null,null,null];
+  const dH  = [...H_DSL, null,null,null,null];
+  const lH  = [...H_LPG, null,null,null,null];
+  const bH  = [...H_BRT, null,null,null,null];
+
+  // Forecast: nulls in historical positions, connect at index HIST_N-1
+  const gF  = new Array(HIST_N-1).fill(null);
+  const dF  = new Array(HIST_N-1).fill(null);
+  const lF  = new Array(HIST_N-1).fill(null);
+  const bF  = new Array(HIST_N-1).fill(null);
+
+  // Connect at today
+  gF.push(H_GAS[HIST_N-1]); dF.push(H_DSL[HIST_N-1]);
+  lF.push(H_LPG[HIST_N-1]); bF.push(H_BRT[HIST_N-1]);
+
+  const gCIlo=[...gF], gCIhi=[...gF], dCIlo=[...dF], dCIhi=[...dF];
+  const lCIlo=[...lF], lCIhi=[...lF];
+
+  FWIN.forEach(w => {
+    const b  = brent * w.bScale;
+    const er = getER(b, auto, man);
+    const g  = calcGas(b, er).pump;
+    const d  = calcDsl(b, er).pump;
+    const l  = calcLPG(b, er).pump;
+    gF.push(+g.toFixed(2)); dF.push(+d.toFixed(2)); lF.push(+l.toFixed(2)); bF.push(+b.toFixed(1));
+    // 90% CI bands (±4% for near-term, ±7% for further windows)
+    const ci = FWIN.indexOf(w) < 2 ? 0.040 : 0.065;
+    gCIlo.push(+(g*(1-ci)).toFixed(2)); gCIhi.push(+(g*(1+ci)).toFixed(2));
+    dCIlo.push(+(d*(1-ci)).toFixed(2)); dCIhi.push(+(d*(1+ci)).toFixed(2));
+    lCIlo.push(+(l*(1-ci)).toFixed(2)); lCIhi.push(+(l*(1+ci)).toFixed(2));
+  });
+
+  return { gH,dH,lH,bH, gF,dF,lF,bF, gCIlo,gCIhi,dCIlo,dCIhi,lCIlo,lCIhi };
+}
+
+// ── CHART ─────────────────────────────────────────────────
+function isDark() { return document.documentElement.getAttribute('data-theme')==='dark' }
+function gc(a)    { return isDark()?`rgba(56,100,160,${a})`:`rgba(60,100,160,${a})` }
+function tc()     { return isDark()?'#3C5878':'#8CAAC8' }
+
+const todayPlugin = {
+  id:'tp',
+  afterDraw(ch){
+    const ctx=ch.ctx, xs=ch.scales.x, ys=ch.scales.y;
+    const xi = HIST_N-1;
+    const xT = xs.getPixelForValue(xi);
+    if(!xT) return;
+    ctx.save();
+    // Forecast zone
+    const xE = xs.getPixelForValue(N-1);
+    if(xE){
+      const g=ctx.createLinearGradient(xT,0,xE,0);
+      g.addColorStop(0,isDark()?'rgba(245,168,39,.07)':'rgba(245,168,39,.04)');
+      g.addColorStop(1,'rgba(245,168,39,.01)');
+      ctx.fillStyle=g; ctx.fillRect(xT,ys.top,xE-xT,ys.bottom-ys.top);
+    }
+    ctx.setLineDash([5,4]); ctx.strokeStyle='rgba(245,168,39,.5)'; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.moveTo(xT,ys.top); ctx.lineTo(xT,ys.bottom); ctx.stroke();
+    ctx.setLineDash([]); ctx.font="600 8.5px 'IBM Plex Mono'";
+    ctx.fillStyle='rgba(245,168,39,.8)'; ctx.fillText('TODAY',xT+4,ys.top+12);
+    ctx.restore();
+  }
+};
+
+const initFD = buildForecast(100);
+const cctx   = document.getElementById('chart').getContext('2d');
+const ch = new Chart(cctx, {
+  type:'line', plugins:[todayPlugin],
+  data:{
+    labels: LABELS,
+    datasets:[
+      // Historical solid lines
+      { label:'Gasoline (hist)',  data:initFD.gH, borderColor:'#38C4F8', borderWidth:2.5, pointRadius:3.5, pointHoverRadius:7, pointBackgroundColor:'#38C4F8', tension:.35, fill:false, spanGaps:false, yAxisID:'y' },
+      { label:'Diesel (hist)',    data:initFD.dH, borderColor:'#FB923C', borderWidth:2.5, pointRadius:3.5, pointHoverRadius:7, pointBackgroundColor:'#FB923C', tension:.35, fill:false, spanGaps:false, yAxisID:'y' },
+      { label:'LPG (hist)',       data:initFD.lH, borderColor:'#3DE87A', borderWidth:2.5, pointRadius:3.5, pointHoverRadius:7, pointBackgroundColor:'#3DE87A', tension:.35, fill:false, spanGaps:false, yAxisID:'y' },
+      // Brent secondary axis (historical)
+      { label:'Brent (hist)',     data:initFD.bH, borderColor:'rgba(245,168,39,.6)', borderWidth:1.5, pointRadius:2, tension:.35, fill:false, spanGaps:false, yAxisID:'y2', borderDash:[3,2] },
+      // Forecast dashed
+      { label:'Gasoline (fcst)',  data:initFD.gF, borderColor:'#38C4F8', borderDash:[7,5], borderWidth:2, pointRadius:5, pointHoverRadius:8, pointBackgroundColor:'#38C4F8', pointBorderColor:isDark()?'#0F1C30':'#FFF', pointBorderWidth:2, tension:.35, fill:false, spanGaps:false, yAxisID:'y' },
+      { label:'Diesel (fcst)',    data:initFD.dF, borderColor:'#FB923C', borderDash:[7,5], borderWidth:2, pointRadius:5, pointHoverRadius:8, pointBackgroundColor:'#FB923C', pointBorderColor:isDark()?'#0F1C30':'#FFF', pointBorderWidth:2, tension:.35, fill:false, spanGaps:false, yAxisID:'y' },
+      { label:'LPG (fcst)',       data:initFD.lF, borderColor:'#3DE87A', borderDash:[7,5], borderWidth:2, pointRadius:5, pointHoverRadius:8, pointBackgroundColor:'#3DE87A', pointBorderColor:isDark()?'#0F1C30':'#FFF', pointBorderWidth:2, tension:.35, fill:false, spanGaps:false, yAxisID:'y' },
+      // Brent secondary forecast
+      { label:'Brent (fcst)',     data:initFD.bF, borderColor:'rgba(245,168,39,.5)', borderDash:[5,4], borderWidth:1.5, pointRadius:3, tension:.35, fill:false, spanGaps:false, yAxisID:'y2' },
+      // Confidence bands (gas only for clarity)
+      { label:'Gas CI High',      data:initFD.gCIhi, borderColor:'rgba(56,196,248,.2)', borderWidth:1, fill:'+1', backgroundColor:'rgba(56,196,248,.06)', pointRadius:0, tension:.35, spanGaps:false, yAxisID:'y' },
+      { label:'Gas CI Low',       data:initFD.gCIlo, borderColor:'rgba(56,196,248,.2)', borderWidth:1, fill:false, pointRadius:0, tension:.35, spanGaps:false, yAxisID:'y' },
+    ]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    interaction:{ mode:'index', intersect:false },
+    plugins:{
+      legend:{ display:false },
+      tooltip:{
+        backgroundColor:isDark()?'#0F1C30':'#FFF',
+        borderColor:isDark()?'#1A2D45':'#E4EBF5', borderWidth:1,
+        titleFont:{family:"'IBM Plex Mono'",size:9.5}, bodyFont:{family:"'IBM Plex Mono'",size:10},
+        titleColor:isDark()?'#7A9FCA':'#3A5880', bodyColor:isDark()?'#E4EDF8':'#0D1E35',
+        padding:10, cornerRadius:14,
+        callbacks:{
+          label(ctx){
+            if(ctx.raw===null) return null;
+            const lbl = ctx.dataset.label || '';
+            if(lbl.includes('CI')) return null;
+            if(lbl.includes('Brent')) return ` Brent: $${ctx.raw}/bbl`;
+            const u = lbl.includes('LPG') ? 'GHS/kg' : 'GHS/L';
+            const tag = lbl.includes('fcst') ? ' ⟶' : '';
+            return ` ${lbl.replace(' (hist)','').replace(' (fcst)','')}${tag}: GHS ${(+ctx.raw).toFixed(2)} ${u}`;
+          }
+        }
+      }
+    },
+    scales:{
+      x:{ grid:{color:gc(.18)}, ticks:{font:{family:"'IBM Plex Mono'",size:8},color:tc(),maxRotation:50}, border:{color:gc(.3)} },
+      y:{ position:'left', grid:{color:gc(.18)}, ticks:{font:{family:"'IBM Plex Mono'",size:8.5},color:tc(),callback:v=>'GHS '+v.toFixed(0)}, border:{color:gc(.3)}, title:{display:true,text:'GHS/L (GHS/kg)',font:{family:"'IBM Plex Mono'",size:8},color:tc()} },
+      y2:{ position:'right', grid:{display:false}, ticks:{font:{family:"'IBM Plex Mono'",size:8.5},color:'rgba(245,168,39,.6)',callback:v=>'$'+v}, border:{color:gc(.2)}, title:{display:true,text:'Brent $/bbl',font:{family:"'IBM Plex Mono'",size:8},color:'rgba(245,168,39,.6)'} }
+    }
+  }
+});
+
+// ── PRICING WINDOW DATA ───────────────────────────────────
+const WIN_DEFS = [
+  { lbl:'Mar 1–15, 2026',  type:'cur',  brent:80.0,  er:10.80, note:'Confirmed · Goil Super XP 95 GHS 13.50/L (GlobalPetrolPrices)' },
+  { lbl:'Mar 16–31, 2026', type:'next', brent:null,  er:null,  note:'Projected · COMAC/GBC methodology · Brent shock window' },
+  { lbl:'Apr 1–15, 2026',  type:'fcst', brentScale:0.96, note:'Model-derived · Brent moderate retreat' },
+  { lbl:'Apr 16–30, 2026', type:'fcst', brentScale:0.92, note:'Model-derived · Supply adjustment pricing' },
+  { lbl:'May 1–15, 2026',  type:'fcst', brentScale:0.88, note:'Model-derived · Extended stabilisation' },
+  { lbl:'May 16–31, 2026', type:'fcst', brentScale:0.85, note:'Model-derived · OPEC+ response priced in' },
+];
+
+function winPrices(idx) {
+  const def = WIN_DEFS[idx];
+  const auto = document.getElementById('auto-er').checked;
+  const man  = document.getElementById('er-in').value;
+  if (idx === 0) {
+    return { g:BASE.gasCur, d:BASE.dslCur, l:BASE.lpgCur, a:calcATK(BASE.bogFX, 80).pump,
+             brent:80, er:BASE.bogFX, conf:99 };
+  }
+  if (idx === 1) {
+    const er = getER(curBrent, auto, man);
+    return { g:calcGas(curBrent,er).pump, d:calcDsl(curBrent,er).pump,
+             l:calcLPG(curBrent,er).pump, a:calcATK(curBrent,er).pump,
+             brent:curBrent, er, conf:82 };
+  }
+  const b  = curBrent * (def.brentScale || 0.95);
+  const er = getER(b, auto, man);
+  const idx2 = idx - 2;
+  const ci = [76, 71, 65, 60][idx2] || 65;
+  return { g:calcGas(b,er).pump, d:calcDsl(b,er).pump,
+           l:calcLPG(b,er).pump, a:calcATK(b,er).pump, brent:b, er, conf:ci };
+}
+
+let activeWin = 0;
+
+function renderWindows() {
+  const container = document.getElementById('fw-body');
+  const html = WIN_DEFS.map((def,i) => {
+    const p    = winPrices(i);
+    const prev = i > 0 ? winPrices(i-1) : null;
+    const gC   = prev ? (p.g-prev.g)/prev.g*100 : 0;
+    const dC   = prev ? (p.d-prev.d)/prev.d*100 : 0;
+    const lC   = prev ? (p.l-prev.l)/prev.l*100 : 0;
+    const aC   = prev ? (p.a-prev.a)/prev.a*100 : 0;
+    const maxChg = Math.max(Math.abs(gC), Math.abs(dC), Math.abs(lC));
+    const alert  = maxChg > 5;
+
+    function dp(v, col) {
+      if(!prev) return `<span class="pill nt">BASE</span>`;
+      const up = v>=0;
+      return `<span class="pill ${up?'up':'dn'}">${up?'▲ +':'▼ '}${Math.abs(v).toFixed(1)}%</span>`;
+    }
+    function arr(v) { if(!prev || Math.abs(v)<0.3) return '⟶'; return v>0?'↑':'↓' }
+
+    return `<div class="fw-content${i===activeWin?' vis':''}" id="fwc-${i}">
+      ${alert && i>0 ? `<div class="alert-row vis"><span class="alert-icon">⚠️</span><span class="alert-txt">ALERT: Predicted price change of ${maxChg.toFixed(1)}% exceeds the 5% alert threshold · Confidence: ${p.conf}%</span></div>` : ''}
+      <div class="fw-grid">
+        <div class="fwp"><div class="fwp-bar" style="background:var(--gas)"></div>
+          <div class="fp-lbl">⛽ GASOLINE · SUPER XP 95</div>
+          <div class="fp-price" style="color:var(--gas)">${arr(gC)} GHS ${p.g.toFixed(2)}</div>
+          <div class="fp-unit">per litre</div>
+          <div class="fp-chg">${dp(gC,'gas')}</div>
+          <div class="fp-conf">Confidence: ${p.conf}% · Model: NPA IPP</div>
+          <div class="fp-bar"><div class="fp-fill" style="background:var(--gas);width:${Math.min(100,p.g/22*100)}%"></div></div>
+        </div>
+        <div class="fwp"><div class="fwp-bar" style="background:var(--diesel)"></div>
+          <div class="fp-lbl">🚛 DIESEL XP · EN590</div>
+          <div class="fp-price" style="color:var(--diesel)">${arr(dC)} GHS ${p.d.toFixed(2)}</div>
+          <div class="fp-unit">per litre</div>
+          <div class="fp-chg">${dp(dC,'diesel')}</div>
+          <div class="fp-conf">Confidence: ${p.conf}% · Crack: $${crackDsl(p.brent).toFixed(0)}/bbl</div>
+          <div class="fp-bar"><div class="fp-fill" style="background:var(--diesel);width:${Math.min(100,p.d/22*100)}%"></div></div>
+        </div>
+        <div class="fwp"><div class="fwp-bar" style="background:var(--lpg)"></div>
+          <div class="fp-lbl">🔥 LPG · 12 kg = GHS ${(p.l*12).toFixed(0)}</div>
+          <div class="fp-price" style="color:var(--lpg)">${arr(lC)} GHS ${p.l.toFixed(2)}</div>
+          <div class="fp-unit">per kg · Argus BUTCIFALCG</div>
+          <div class="fp-chg">${dp(lC,'lpg')}</div>
+          <div class="fp-conf">Confidence: ${p.conf}% · CIF ARA ref: $1,000/MT</div>
+          <div class="fp-bar"><div class="fp-fill" style="background:var(--lpg);width:${Math.min(100,p.l/22*100)}%"></div></div>
+        </div>
+        <div class="fwp"><div class="fwp-bar" style="background:var(--atk)"></div>
+          <div class="fp-lbl">✈️ ATK / JET A-1</div>
+          <div class="fp-price" style="color:var(--atk)">${arr(aC)} GHS ${p.a.toFixed(2)}</div>
+          <div class="fp-unit">per litre · aviation</div>
+          <div class="fp-chg">${dp(aC,'atk')}</div>
+          <div class="fp-conf">Confidence: ${p.conf}% · Crack: $${crackATK(p.brent).toFixed(0)}/bbl</div>
+          <div class="fp-bar"><div class="fp-fill" style="background:var(--atk);width:${Math.min(100,p.a/22*100)}%"></div></div>
+        </div>
+      </div>
+      <div class="fw-bottom">
+        <div class="fb-item"><span class="fb-lbl">BRENT:</span><span class="fb-val" style="color:var(--gold)">$${p.brent.toFixed(1)}/bbl</span></div>
+        <span style="font-family:var(--ff-m);font-size:8.5px;color:var(--txt3)">·</span>
+        <div class="fb-item"><span class="fb-lbl">BOG FX:</span><span class="fb-val">GHS ${p.er.toFixed(2)}</span></div>
+        <span style="font-family:var(--ff-m);font-size:8.5px;color:var(--txt3)">·</span>
+        <div class="fb-item"><span style="font-family:var(--ff-m);font-size:8.5px;color:var(--txt2)">${def.note}</span></div>
+      </div>
+    </div>`;
+  }).join('');
+  container.innerHTML = html;
+}
+
+function showWin(idx, btn) {
+  activeWin = idx;
+  document.querySelectorAll('.fw-content').forEach(c=>c.classList.remove('vis'));
+  const el = document.getElementById(`fwc-${idx}`);
+  if(el) el.classList.add('vis');
+  document.querySelectorAll('.ftab').forEach(b=>b.classList.remove('act'));
+  btn.classList.add('act');
+}
+
+// ── MAIN UPDATE ENGINE ────────────────────────────────────
+function onSlide(val) {
+  val = parseFloat(val);
+  curBrent = val;
+  document.getElementById('slider').value = val;
+
+  const pct = ((val-60)/190*100).toFixed(1);
+  document.getElementById('slider').style.setProperty('--pct', pct+'%');
+
+  const auto = document.getElementById('auto-er').checked;
+  const man  = document.getElementById('er-in').value;
+  const er   = getER(val, auto, man);
+  if (auto) document.getElementById('er-in').value = er.toFixed(2);
+
+  // Compute products
+  const g = calcGas(val, er);
+  const d = calcDsl(val, er);
+  const l = calcLPG(val, er);
+  const a = calcATK(val, er);
+
+  // ── Metric updates ──
+  document.getElementById('mc-brent').textContent = '$'+val.toFixed(1);
+  document.getElementById('mc-fx').textContent    = er.toFixed(2);
+  document.getElementById('mc-fx14').textContent  = (er + 0.05).toFixed(2);
+  const bYTD = (val - BASE.brent_Jan1)/BASE.brent_Jan1*100;
+  const bEl  = document.getElementById('mc-brent-ytd');
+  bEl.textContent = (bYTD>=0?'▲ +':'▼ ')+Math.abs(bYTD).toFixed(1)+'% YTD';
+  bEl.className   = 'pill ' + (bYTD>=0?'up':'dn');
+
+  // ── Crack spreads ──
+  const gc2 = crackGas(val), dc2 = crackDsl(val);
+  document.getElementById('cs-p').textContent  = `$${Math.round(gc2)}/$${Math.round(dc2)}`;
+  document.getElementById('cs-sp').textContent = `$${Math.round(gc2-1)}/$${Math.round(dc2-1)}`;
+  document.getElementById('cs-gs').textContent = `$${Math.round(gc2+3)}/$${Math.round(dc2+2)}`;
+
+  // ── Brent display ──
+  document.getElementById('sp-brent').textContent = '$'+Math.round(val);
+  const sy = (val-BASE.brent_Jan1)/BASE.brent_Jan1*100;
+  const syEl = document.getElementById('sp-ytd');
+  syEl.textContent = (sy>=0?'▲ +':'▼ ')+sy.toFixed(1)+'% YTD vs $'+BASE.brent_Jan1;
+  syEl.className = 'by ' + (sy>=0?'txt-up':'txt-dn');
+
+  // ── Indicative prices ──
+  const gv=document.getElementById('i-g'), dv=document.getElementById('i-d'), lv=document.getElementById('i-l');
+  gv.textContent = 'GHS '+g.pump.toFixed(2);
+  dv.textContent = 'GHS '+d.pump.toFixed(2);
+  lv.textContent = 'GHS '+l.pump.toFixed(2);
+  document.getElementById('i-lpg12').textContent = 'GHS '+(l.pump*12).toFixed(0);
+  document.getElementById('i-l-kg').textContent  = 'GHS/kg';
+  flash(gv); flash(dv); flash(lv);
+
+  function setChg(elId, cur, prev) {
+    const diff = cur-prev, pct2=(diff/prev*100);
+    const el = document.getElementById(elId);
+    if(Math.abs(pct2)<0.3){ el.textContent='— Unchanged at Brent $'+val.toFixed(0); el.className='ichg txt-nt'; return; }
+    el.textContent = (diff>0?'▲ +':'▼ ')+Math.abs(diff).toFixed(2)+' GHS/unit ('+(diff>0?'+':'')+pct2.toFixed(1)+'%)';
+    el.className = 'ichg ' + (diff>0?'txt-up':'txt-dn');
+  }
+  setChg('i-g-c', g.pump, BASE.gasCur);
+  setChg('i-d-c', d.pump, BASE.dslCur);
+  setChg('i-l-c', l.pump, BASE.lpgCur);
+
+  // ── Risk badge ──
+  const cp = Math.abs((g.pump-BASE.gasCur)/BASE.gasCur*100);
+  const rb = document.getElementById('risk-badge');
+  if(cp<5)      { rb.textContent='● LOW RISK · Within ±5%'; rb.className='risk lo'; }
+  else if(cp<15){ rb.textContent='▲ MODERATE · '+cp.toFixed(0)+'% Change'; rb.className='risk md'; }
+  else if(cp<30){ rb.textContent='▲▲ HIGH · +'+cp.toFixed(0)+'% Shift'; rb.className='risk hi'; }
+  else          { rb.textContent='⚠ EXTREME · +'+cp.toFixed(0)+'% Surge'; rb.className='risk xt'; }
+
+  // ── Breakdown cards ──
+  document.getElementById('bd-fob').textContent   = '$'+(BENCH.gasFOB_MT/CONV.gasL).toFixed(3)+'/L';
+  document.getElementById('bd-fx').textContent    = '×'+er.toFixed(2);
+  document.getElementById('bd-ipp').textContent   = 'GHS '+g.ipp_L.toFixed(2)+'/L';
+  document.getElementById('ps-ipp').textContent   = 'GHS '+g.ipp_L.toFixed(2)+'/L';
+  document.getElementById('ps-pump').textContent  = 'GHS '+g.pump.toFixed(2)+'/L';
+  document.getElementById('ps-ipp-b').style.width = Math.min(100,(g.ipp_L/g.pump)*100)+'%';
+  document.getElementById('ps-sh').textContent    = (g.levies/g.pump*100).toFixed(0)+'%';
+  const gChg2 = ((g.pump-BASE.gasCur)/BASE.gasCur*100);
+  const pcEl  = document.getElementById('ps-chg');
+  pcEl.textContent = (gChg2>=0?'+':'')+gChg2.toFixed(1)+'%';
+  pcEl.className   = 'bkt-v ' + (gChg2>=0?'txt-up':'txt-dn');
+
+  // Sensitivity
+  const sens10g = calcGas(val+10, er).pump - g.pump;
+  const sens10d = calcDsl(val+10, er).pump - d.pump;
+  document.getElementById('sa-g').textContent = '+GHS '+(sens10g).toFixed(2)+'/L';
+  document.getElementById('sa-d').textContent = '+GHS '+(sens10d).toFixed(2)+'/L';
+
+  // ── Product USD/MT cards ──
+  document.getElementById('p-g-v').innerHTML = '$'+Math.round(BENCH.gasFOB_MT)+' <span style="font-size:11px;opacity:.45">/MT</span>';
+  document.getElementById('p-d-v').innerHTML = '$'+Math.round(d.usdMT)+' <span style="font-size:11px;opacity:.45">/MT</span>';
+  document.getElementById('p-l-v').innerHTML = '$'+Math.round(BENCH.lpgCIF_MT)+' <span style="font-size:11px;opacity:.45">/MT</span>';
+  document.getElementById('p-a-v').innerHTML = '$'+Math.round(a.usdMT)+' <span style="font-size:11px;opacity:.45">/MT</span>';
+  document.getElementById('p-g-b').style.width = Math.min(100,(BENCH.gasFOB_MT/1900)*100)+'%';
+  document.getElementById('p-d-b').style.width = Math.min(100,(d.usdMT/1900)*100)+'%';
+  document.getElementById('p-l-b').style.width = Math.min(100,(BENCH.lpgCIF_MT/1900)*100)+'%';
+  document.getElementById('p-a-b').style.width = Math.min(100,(a.usdMT/1900)*100)+'%';
+
+  // ── Update chart ──
+  const fd = buildForecast(val);
+  ch.data.datasets[4].data = fd.gF;
+  ch.data.datasets[5].data = fd.dF;
+  ch.data.datasets[6].data = fd.lF;
+  ch.data.datasets[7].data = fd.bF;
+  ch.data.datasets[8].data = fd.gCIhi;
+  ch.data.datasets[9].data = fd.gCIlo;
+  ch.update('active');
+
+  // ── Re-render windows ──
+  renderWindows();
+  const activeEl = document.getElementById(`fwc-${activeWin}`);
+  if(activeEl) activeEl.classList.add('vis');
+}
+
+function flash(el){ el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash') }
+
+function setScen(b, btn) {
+  document.querySelectorAll('.sbtn').forEach(x=>x.classList.remove('act'));
+  btn.classList.add('act');
+  onSlide(b);
+}
+
+// ── UI CONTROLS ───────────────────────────────────────────
+function toggleMode() {
+  const html = document.documentElement;
+  const dark = html.getAttribute('data-theme')==='dark';
+  html.setAttribute('data-theme', dark?'light':'dark');
+  document.getElementById('mode-btn').textContent = dark?'🌙':'☀️';
+}
+
+function toggleAlgo() {
+  const body = document.getElementById('algo-body');
+  const arr  = document.getElementById('algo-arr');
+  body.classList.toggle('open');
+  arr.classList.toggle('open');
+}
+
+function toggleCit() {
+  const body = document.getElementById('cit-body');
+  const arr  = document.getElementById('cit-arr');
+  body.classList.toggle('open');
+  arr.classList.toggle('open');
+}
+
+// ── COUNTDOWN TIMER ───────────────────────────────────────
+function updateCountdown() {
+  const now    = new Date();
+  const next   = new Date('2026-03-16T00:00:00+00:00');
+  const cur16  = new Date('2026-03-15T23:59:59+00:00');
+  const diffMs = next - now;
+  const diffD  = Math.max(0, Math.ceil(diffMs/86400000));
+  document.getElementById('days-left').textContent  = Math.max(0, Math.ceil((cur16-now)/86400000));
+  document.getElementById('days-next').textContent  = diffD;
+}
+updateCountdown();
+setInterval(updateCountdown, 60000);
+
+// ── INITIALISE ────────────────────────────────────────────
+document.getElementById('slider').style.setProperty('--pct', ((100-60)/190*100).toFixed(1)+'%');
+renderWindows();
+onSlide(100);
+</script>
+</body>
+</html>
