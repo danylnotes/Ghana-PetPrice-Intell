@@ -1,0 +1,2 @@
+# API Rate Limiting & Caching Strategy
+Implement rate limiting for external data endpoints (Platts, BOG, COMAC) and local caching to reduce redundant API calls and improve dashboard load times. Consider Redis or in-memory cache with TTL-based invalidation.
